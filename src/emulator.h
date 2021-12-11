@@ -1,5 +1,7 @@
 #pragma once
 
+#include "constants.h"
+#include "memory.h"
 #include "screen.h"
 #include "types.h"
 
@@ -18,15 +20,12 @@ namespace c8
         void update();
         void render();
 
-    public:
-        static constexpr u32 C8_SCREEN_WIDTH  = 64;
-        static constexpr u32 C8_SCREEN_HEIGHT = 32;
-        static constexpr u32 WINDOW_SIZE_SCALING = 20;
-        static constexpr u32 WINDOW_WIDTH  = C8_SCREEN_WIDTH  * WINDOW_SIZE_SCALING;
-        static constexpr u32 WINDOW_HEIGHT = C8_SCREEN_HEIGHT * WINDOW_SIZE_SCALING;
-
     private:
+        Memory m_memory;
         Screen m_screen;
         std::shared_ptr<sf::RenderWindow> m_window;
+
+        // Temporary
+        u32 test_x = 0, test_y = 0;
     };
 }

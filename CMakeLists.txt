@@ -10,6 +10,7 @@ add_executable(
     src/main.cpp
 
     src/emulator.cpp
+    src/memory.cpp
     src/screen.cpp
 )
 set_target_properties(chip8-cpp PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_CURRENT_BINARY_DIR})
