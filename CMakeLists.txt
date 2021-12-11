@@ -10,6 +10,7 @@ add_executable(
     src/main.cpp
 
     src/emulator.cpp
+    src/interpreter.cpp
     src/memory.cpp
     src/screen.cpp
 )

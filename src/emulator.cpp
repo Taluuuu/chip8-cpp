@@ -1,5 +1,7 @@
 #include "emulator.h"
 
+#include <iostream>
+
 namespace c8
 {
     void Emulator::run()
@@ -16,15 +18,25 @@ namespace c8
 
     void Emulator::init()
     {
+        std::cout << "[EMULATOR] Starting initialization." << std::endl;
+
         // Create window
         m_window = std::make_shared<sf::RenderWindow>(
             sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "chip8-emu", 
             sf::Style::Titlebar | sf::Style::Close);
-
         m_window->setVerticalSyncEnabled(true);
 
-        // Temporary
-        m_memory.set(0, 0xFF);
+        // Create screen
+        m_screen = std::make_shared<Screen>();
+
+        // Create memory and load rom
+        m_memory = std::make_shared<Memory>();
+        m_memory->load_rom("../roms/ibm_logo.ch8");
+
+        // Create interpreter
+        m_interpreter = std::make_shared<Interpreter>(*this);
+
+        std::cout << "[EMULATOR] Finished initialization." << std::endl;
     }
 
     void Emulator::update()
@@ -37,7 +49,7 @@ namespace c8
                 m_window->close();
         }
 
-        m_screen.draw_from_array(m_memory, 0, 1, test_x++, test_y++);
+        m_interpreter->step();
     }
 
     void Emulator::render()
@@ -45,7 +57,7 @@ namespace c8
         m_window->clear(sf::Color::Black);
 
         // Render the screen
-        m_screen.draw(m_window);
+        m_screen->draw(m_window);
 
         m_window->display();
     }

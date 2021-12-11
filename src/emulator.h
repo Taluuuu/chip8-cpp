@@ -1,6 +1,7 @@
 #pragma once
 
 #include "constants.h"
+#include "interpreter.h"
 #include "memory.h"
 #include "screen.h"
 #include "types.h"
@@ -15,17 +16,18 @@ namespace c8
     public:
         void run();
 
+        inline std::shared_ptr<Memory>& memory() { return m_memory; }
+        inline std::shared_ptr<Screen>& screen() { return m_screen; }
+
     private:
         void init();
         void update();
         void render();
 
     private:
-        Memory m_memory;
-        Screen m_screen;
+        std::shared_ptr<Memory> m_memory;
+        std::shared_ptr<Screen> m_screen;
+        std::shared_ptr<Interpreter> m_interpreter;
         std::shared_ptr<sf::RenderWindow> m_window;
-
-        // Temporary
-        u32 test_x = 0, test_y = 0;
     };
 }

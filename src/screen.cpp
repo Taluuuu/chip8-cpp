@@ -25,20 +25,29 @@ namespace c8
         update_texture();
     }
 
-    void Screen::draw_from_array(const Memory& memory, u32 start_index, u8 n, u8 x, u8 y)
+    void Screen::clear()
+    {
+        for(u32 i = 0; i < 4 * PIXEL_COUNT; i+= 4)
+            m_pixels->operator[](i + 3) = 0;
+
+        update_texture();
+    }
+
+    void Screen::draw_from_array(const std::shared_ptr<Memory>& memory, u32 start_index, u8 n, u8 x, u8 y)
     {
         // Loop through every byte
         for(u32 i = 0; i < n; i++)
         {
-            u8 data = memory.get(start_index + i);
+            u8 data = memory->get(start_index + i);
             u8 mask = 0x80;
 
             // Loop through every bit in the byte
             for(u32 j = 0; j < 8; j++)
             {
                 u32 alpha_index = 4 * (
-                    (x + i * 8 + j) % SCREEN_WIDTH + 
-                    (y % SCREEN_HEIGHT) * SCREEN_WIDTH) + 3;
+                    (x + j) % SCREEN_WIDTH + 
+                    (y + i) * SCREEN_WIDTH
+                ) + 3;
                 
                 // XOR the new pixel value with the old one
                 bool xor_result = static_cast<bool>(data & mask) ^ static_cast<bool>(m_pixels->operator[](alpha_index));

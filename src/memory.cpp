@@ -1,5 +1,6 @@
 #include "memory.h"
 
+#include <fstream>
 #include <iostream>
 
 namespace c8
@@ -8,6 +9,37 @@ namespace c8
     {
         m_memory = std::make_unique<std::array<u8, MEMORY_SIZE>>();
         m_memory->fill(0); // Default value 0 for all memory locations
+    }
+
+    void Memory::load_rom(const std::string& path)
+    {
+        // Open file
+        std::ifstream file;
+        file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+
+        try
+        {
+            // Get file length
+            file.open(path);
+            file.seekg(0, std::ios::end);
+            u32 length = file.tellg();
+            file.seekg(0, std::ios::beg);
+
+            // Make sure the rom is smaller than the memory
+            if (length > MAX_PROGRAM_SIZE)
+            {
+                length = MAX_PROGRAM_SIZE;
+                std::cout << "[MEMORY] The ROM is too large for the chip-8's memory. Max size is " << MAX_PROGRAM_SIZE << "." << std::endl;
+            }
+
+            // Read file
+            file.read(reinterpret_cast<char*>(m_memory->data() + PROGRAM_START), length);
+            std::cout << "[MEMORY] Loaded rom file '" << path << "' into memory." << std::endl;
+        }
+        catch(const std::ifstream::failure& e)
+        {
+            std::cout << "[MEMORY] Failed to load rom file '" << path << "'." << std::endl;
+        }
     }
 
     u8 Memory::get(u32 address) const

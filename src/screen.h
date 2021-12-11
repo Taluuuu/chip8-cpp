@@ -14,6 +14,13 @@ namespace c8
     {
     public:
         Screen();
+
+        /**
+         * @brief Turn off all pixels
+         * 
+         */
+        void clear();
+
         /**
          * @brief Draw n * 8 pixels from start_index with an x and y offset. Pixels are XORed onto the screen.
          * 
@@ -23,7 +30,7 @@ namespace c8
          * @param x Offset on the x-axis
          * @param y Offset on the y-axis
          */
-        void draw_from_array(const Memory& memory, u32 start_index, u8 n, u8 x, u8 y);
+        void draw_from_array(const std::shared_ptr<Memory>& memory, u32 start_index, u8 n, u8 x, u8 y);
         void draw(std::shared_ptr<sf::RenderWindow>& window);
 
     private:
@@ -32,8 +39,8 @@ namespace c8
     private:
         // Bitmap RGBA pixels
         std::unique_ptr<std::array<u8, PIXEL_COUNT * 4>> m_pixels;
-        sf::Image   m_image;
+        sf::Image m_image;
         sf::Texture m_texture;
-        sf::Sprite  m_sprite;
+        sf::Sprite m_sprite;
     };
 }
