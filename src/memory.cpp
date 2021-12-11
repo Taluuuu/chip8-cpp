@@ -9,6 +9,10 @@ namespace c8
     {
         m_memory = std::make_unique<std::array<u8, MEMORY_SIZE>>();
         m_memory->fill(0); // Default value 0 for all memory locations
+
+        // Copy font into memory
+        for(u32 i = 0; i < 80; i++)
+            m_memory->operator[](i) = FONT[i];
     }
 
     void Memory::load_rom(const std::string& path)
@@ -20,7 +24,7 @@ namespace c8
         try
         {
             // Get file length
-            file.open(path);
+            file.open(path, std::ifstream::binary);
             file.seekg(0, std::ios::end);
             u32 length = file.tellg();
             file.seekg(0, std::ios::beg);
@@ -38,7 +42,7 @@ namespace c8
         }
         catch(const std::ifstream::failure& e)
         {
-            std::cout << "[MEMORY] Failed to load rom file '" << path << "'." << std::endl;
+            std::cout << "[MEMORY] Failed to load rom file '" << path << "'." << e.what() << std::endl;
         }
     }
 

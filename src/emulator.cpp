@@ -31,11 +31,11 @@ namespace c8
 
         // Create memory and load rom
         m_memory = std::make_shared<Memory>();
-        m_memory->load_rom("../roms/ibm_logo.ch8");
+        m_memory->load_rom("../roms/fishie.ch8");
 
         // Create interpreter
         m_interpreter = std::make_shared<Interpreter>(*this);
-
+        
         std::cout << "[EMULATOR] Finished initialization." << std::endl;
     }
 

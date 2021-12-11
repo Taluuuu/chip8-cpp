@@ -29,8 +29,9 @@ namespace c8
          * @param n The number of bytes to draw
          * @param x Offset on the x-axis
          * @param y Offset on the y-axis
+         * @return true if there was a collision, false if not
          */
-        void draw_from_array(const std::shared_ptr<Memory>& memory, u32 start_index, u8 n, u8 x, u8 y);
+        bool draw_from_array(const std::shared_ptr<Memory>& memory, u32 start_index, u8 n, u8 x, u8 y);
         void draw(std::shared_ptr<sf::RenderWindow>& window);
 
     private:

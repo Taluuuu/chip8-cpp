@@ -33,8 +33,10 @@ namespace c8
         update_texture();
     }
 
-    void Screen::draw_from_array(const std::shared_ptr<Memory>& memory, u32 start_index, u8 n, u8 x, u8 y)
+    bool Screen::draw_from_array(const std::shared_ptr<Memory>& memory, u32 start_index, u8 n, u8 x, u8 y)
     {
+        bool collision = false;
+
         // Loop through every byte
         for(u32 i = 0; i < n; i++)
         {
@@ -50,14 +52,21 @@ namespace c8
                 ) + 3;
                 
                 // XOR the new pixel value with the old one
-                bool xor_result = static_cast<bool>(data & mask) ^ static_cast<bool>(m_pixels->operator[](alpha_index));
+                bool old_pixel = static_cast<bool>(m_pixels->operator[](alpha_index));
+                bool new_pixel = static_cast<bool>(data & mask);
+                bool xor_result = old_pixel ^ new_pixel;
                 m_pixels->operator[](alpha_index) = 255 * xor_result;
+
+                // Check for collision
+                if(old_pixel && new_pixel)
+                    collision = true;
 
                 mask >>= 1;
             }
         }
 
         update_texture();
+        return collision;
     }
 
     void Screen::draw(std::shared_ptr<sf::RenderWindow>& window)
