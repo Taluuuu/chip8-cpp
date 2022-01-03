@@ -19,8 +19,24 @@ namespace c8
         m_stack.fill(0);
     }
 
-    void Interpreter::step()
+    void Interpreter::step(f32 delta_time)
     {
+        // Calculate delay timer
+        if(m_dt > 0)
+        {
+            m_time_since_dt_dec += delta_time;
+
+            if(m_time_since_dt_dec >= (1.0f / DT_PER_SECOND))
+            {
+                m_time_since_dt_dec -= (1.0f / DT_PER_SECOND);
+                m_dt--;
+            }
+        }
+        else
+        {
+            m_time_since_dt_dec = 0.0f;
+        }
+
         // Get a reference to the memory
         auto& memory = m_emu.memory();
 
@@ -28,10 +44,6 @@ namespace c8
         while(!m_pending_redraw)
         {
             u16 instruction = memory->get(m_pc) << 8 | memory->get(m_pc + 1);
-
-            // TODO: Handle delay timer for real
-            if(m_dt > 0)
-                m_dt -= 1;
 
             switch(instruction & 0xF000)
             {
@@ -111,6 +123,10 @@ namespace c8
                     ins_8xy6(instruction);
                     break;
 
+                case 0x8007:
+                    ins_8xy7(instruction);
+                    break;
+
                 case 0x800E:
                     ins_8xyE(instruction);
                     break;
@@ -129,6 +145,10 @@ namespace c8
                 ins_Annn(instruction);
                 break;
 
+            case 0xB000:
+                ins_Bnnn(instruction);
+                break;
+
             case 0xC000:
                 ins_Cxkk(instruction);
                 break;
@@ -142,6 +162,10 @@ namespace c8
                 {
                     case 0xE09E:
                         ins_Ex9E(instruction);
+                        break;
+
+                    case 0xE0A1:
+                        ins_ExA1(instruction);
                         break;
 
                     default:
@@ -163,6 +187,10 @@ namespace c8
 
                 case 0xF015:
                     ins_Fx15(instruction);
+                    break;
+
+                case 0xF018:
+                    ins_Fx18(instruction);
                     break;
 
                 case 0xF01E:
@@ -204,7 +232,6 @@ namespace c8
             << " at memory location " << std::hex << m_pc << std::endl;
 
         m_pending_redraw = true; // Don't hang the emulator
-        //m_pc += 2;
     }
 
     void Interpreter::ins_00E0()
@@ -223,7 +250,6 @@ namespace c8
         {
             std::cout << "[INTERPRETER] Error: Invalid stack pointer value in instruction 00EE." << std::endl;
         }
-        
         
         m_pc += 2;
     }
@@ -352,7 +378,7 @@ namespace c8
         u8 x = (instruction >> 8) & 0xF;
         u8 y = (instruction >> 4) & 0xF;
 
-        m_registers[0xF] = m_registers[x] > m_registers[y];
+        m_registers[0xF] = m_registers[x] >= m_registers[y];
         m_registers[x] -= m_registers[y];
 
         m_pc += 2;
@@ -369,14 +395,21 @@ namespace c8
         m_pc += 2;
     }
 
+    void Interpreter::ins_8xy7(u16 instruction)
+    {
+        u8 x = (instruction >> 8) & 0xF;
+        u8 y = (instruction >> 4) & 0xF;
+        m_registers[0xF] = m_registers[y] >= m_registers[x];
+        m_registers[x] = m_registers[y] - m_registers[x];
+        m_pc += 2;
+    }
+
     void Interpreter::ins_8xyE(u16 instruction)
     {
         u8 x = (instruction >> 8) & 0xF;
         u8 y = (instruction >> 4) & 0xF;
 
-        if(m_registers[x] & 0x80)
-            m_registers[0xF] = 1;
-
+        m_registers[0xF] = (m_registers[x] & 0x80) >> 7;
         m_registers[x] *= 2;
 
         m_pc += 2;
@@ -397,6 +430,11 @@ namespace c8
     {
         m_i = instruction & 0xFFF;
         m_pc += 2;
+    }
+
+    void Interpreter::ins_Bnnn(u16 instruction)
+    {
+        m_pc = instruction & 0xFFF + m_registers[0x0];
     }
 
     void Interpreter::ins_Cxkk(u16 instruction)
@@ -422,8 +460,15 @@ namespace c8
     void Interpreter::ins_Ex9E(u16 instruction)
     {
         u8 x = (instruction >> 8) & 0xF;
-        // TODO: Keypress
-        m_pc += 2;
+        m_pc += 2 + 2 * m_emu.controller().is_key_pressed(m_registers[x]);
+        m_pending_redraw = true;
+    }
+
+    void Interpreter::ins_ExA1(u16 instruction)
+    {
+        u8 x = (instruction >> 8) & 0xF;
+        m_pc += 2 + 2 * !m_emu.controller().is_key_pressed(m_registers[x]);
+        m_pending_redraw = true;
     }
 
     void Interpreter::ins_Fx07(u16 instruction)
@@ -431,19 +476,37 @@ namespace c8
         u8 x = (instruction >> 8) & 0xF;
         m_registers[x] = m_dt;
         m_pc += 2;
+        m_pending_redraw = true;
     }
 
     void Interpreter::ins_Fx0A(u16 instruction)
     {
         u8 x = (instruction >> 8) & 0xF;
-        // TODO: Keypress
-        m_pc += 2;
+
+        bool key_pressed = false;
+        for(i32 i = 0; i < 16; i++)
+        {
+            if(m_registers[x] = m_emu.controller().is_key_pressed(i))
+            {
+                key_pressed = true;
+                m_pc += 2;
+                break;
+            }
+        }
+
+        m_pending_redraw = true;
     }
 
     void Interpreter::ins_Fx15(u16 instruction)
     {
         u8 x = (instruction >> 8) & 0xF;
         m_dt = m_registers[x];
+        m_pc += 2;
+    }
+
+    void Interpreter::ins_Fx18(u16 instruction)
+    {
+        // TODO: Handle sound
         m_pc += 2;
     }
 

@@ -9,5 +9,7 @@ using u8  = sf::Uint8;
 using u16 = sf::Uint16;
 using u32 = sf::Uint32;
 
+using f32 = float;
+
 using v2i = sf::Vector2i;
 using v2  = sf::Vector2f;

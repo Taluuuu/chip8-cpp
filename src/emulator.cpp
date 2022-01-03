@@ -31,7 +31,7 @@ namespace c8
 
         // Create memory and load rom
         m_memory = std::make_shared<Memory>();
-        m_memory->load_rom("../roms/fishie.ch8");
+        m_memory->load_rom("../roms/xmirror.ch8");
 
         // Create interpreter
         m_interpreter = std::make_shared<Interpreter>(*this);
@@ -49,7 +49,13 @@ namespace c8
                 m_window->close();
         }
 
-        m_interpreter->step();
+        // Calculate delta_time
+        f32 new_time = m_clock.getElapsedTime().asSeconds();
+        f32 delta_time = new_time - m_last_time;
+        m_last_time = new_time;
+
+        m_controller.update();
+        m_interpreter->step(delta_time);
     }
 
     void Emulator::render()

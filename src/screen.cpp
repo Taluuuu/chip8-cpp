@@ -46,22 +46,25 @@ namespace c8
             // Loop through every bit in the byte
             for(u32 j = 0; j < 8; j++)
             {
-                u32 alpha_index = 4 * (
+                u32 alpha_index = (4 * (
                     (x + j) % SCREEN_WIDTH + 
                     (y + i) * SCREEN_WIDTH
-                ) + 3;
-                
-                // XOR the new pixel value with the old one
-                bool old_pixel = static_cast<bool>(m_pixels->operator[](alpha_index));
-                bool new_pixel = static_cast<bool>(data & mask);
-                bool xor_result = old_pixel ^ new_pixel;
-                m_pixels->operator[](alpha_index) = 255 * xor_result;
+                ) + 3);
 
-                // Check for collision
-                if(old_pixel && new_pixel)
-                    collision = true;
+                if(alpha_index < SCREEN_WIDTH * SCREEN_HEIGHT * 4)
+                {
+                    // XOR the new pixel value with the old one
+                    bool old_pixel = static_cast<bool>(m_pixels->operator[](alpha_index));
+                    bool new_pixel = static_cast<bool>(data & mask);
+                    bool xor_result = old_pixel ^ new_pixel;
+                    m_pixels->operator[](alpha_index) = 255 * xor_result;
 
-                mask >>= 1;
+                    // Check for collision
+                    if(old_pixel && new_pixel)
+                        collision = true;
+
+                    mask >>= 1;
+                }
             }
         }
 
